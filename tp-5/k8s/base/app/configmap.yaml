@@ -5,3 +5,19 @@ metadata:
 data:
   ENV_NAME: "base"
   LOG_LEVEL: "info"
+  index.html: |
+    <html>
+      <body>
+        Environment: ${ENV_NAME}
+      </body>
+    </html>
+
+volumeMounts:
+  - name: html
+    mountPath: /usr/share/nginx/html/index.html
+    subPath: index.html
+
+volumes:
+  - name: html
+    configMap:
+      name: demo-app-config
