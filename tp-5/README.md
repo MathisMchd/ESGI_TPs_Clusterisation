@@ -113,3 +113,143 @@ demo-app-574656884c-549gl   1/1     Running            0            62m
 demo-app-574656884c-whvwq   1/1     Running            0            62m
 demo-app-796d7fc7d6-m6lgw   0/1     CrashLoopBackOff   1 (9s ago)   12s
 ```
+
+
+# "Mémo bonnes pratiques" 
+
+
+```bash
+tp-5/
+├── README.md
+└── k8s/
+    ├── base/
+    │   ├── kustomization.yaml
+    │   ├── app/
+    │   │   ├── configmap.yaml
+    │   │   ├── deployment.yaml
+    │   │   └── service.yaml
+    │   ├── namespaces/
+    │   │   ├── app-dev.yaml
+    │   │   ├── app-prod.yaml
+    │   │   └── app-staging.yaml
+    │   └── rbac/
+    │       ├── developer-role.yaml
+    │       ├── prod-deployer-role.yaml
+    │       ├── rolebinding-dev.yaml
+    │       ├── rolebinding-prod.yaml
+    │       └── rolebinding-staging.yaml
+    └── overlays/
+        ├── dev/
+        │   ├── kustomization.yaml
+        │   ├── limitrange.yaml
+        │   └── quota.yaml
+        ├── prod/
+        │   ├── kustomization.yaml
+        │   ├── limitrange.yaml
+        │   ├── networkpolicy-deny-all.yaml
+        │   ├── networkpolicy-egress.yaml
+        │   ├── networkpolicy-ingress.yaml
+        │   └── quota.yaml
+        └── staging/
+            ├── kustomization.yaml
+            ├── limitrange.yaml
+            └── quota.yaml
+```
+## 1. Séparation des environnements
+
+- Utilisation de **namespaces** :
+  - `app-dev`
+  - `app-staging`
+  - `app-prod`
+- Isolation logique des workloads
+- Différences gérées via **Kustomize (overlays)**
+
+---
+
+## 2. RBAC (contrôle d’accès)
+
+- Principe du **moindre privilège**
+- Devs :
+  - accès lecture + debug en dev/staging
+  - aucun accès prod
+- CI/CD :
+  - service account dédié pour déploiement prod
+- Interdiction d’accès direct aux ressources critiques (ex : secrets en prod)
+
+---
+
+## 3. Gestion des secrets
+
+- Ne jamais stocker de secrets en clair dans Git
+- Utilisation de :
+  - Kubernetes Secrets (baseline)
+  - ou solution externe (Vault, SealedSecrets)
+- Accès limité via RBAC
+
+---
+
+## 4. ResourceQuota & LimitRange
+
+- Limitation des ressources par namespace :
+  - CPU / RAM total
+  - nombre de pods max
+- Définition de requests/limits par défaut
+- Prévention du “noisy neighbor”
+
+---
+
+## 5. Pod Security Standards (PSS)
+
+- `dev` / `staging` : baseline
+- `prod` : restricted
+- Contraintes :
+  - `runAsNonRoot: true`
+  - `allowPrivilegeEscalation: false`
+  - `capabilities: drop ALL`
+  - `seccompProfile: RuntimeDefault`
+
+---
+
+## 6. NetworkPolicies
+
+- Politique par défaut : **deny all**
+- Autorisations explicites uniquement :
+  - ingress (ingress controller)
+  - egress (DNS, services nécessaires)
+- Réduction de la surface réseau
+
+---
+
+## 7. Stratégie de release & rollback
+
+- RollingUpdate par défaut
+- Déploiement progressif via staging
+- Rollback rapide :
+  - `kubectl rollout undo deployment`
+- Validation avant passage en prod
+
+---
+
+## 8. Gestion des images
+
+- Utilisation d’un registry contrôlé (ex : private registry)
+- Scan de vulnérabilités (Trivy, etc.)
+- Versionnage explicite (pas de `latest`)
+- Optionnel : signature d’images (cosign)
+
+---
+
+## 9. Observabilité (bonus recommandé)
+
+- Logs centralisés
+- Readiness / Liveness probes
+- Monitoring (Prometheus / Grafana si dispo)
+
+---
+
+## 10. Bonnes pratiques générales
+
+- Infrastructure as Code (YAML versionné)
+- Kustomize ou Helm pour la modularité
+- Séparation stricte dev/staging/prod
+- Principe du moindre privilège partout

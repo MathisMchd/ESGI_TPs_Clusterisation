@@ -2,6 +2,9 @@ resources:
   - ../../base
   - quota.yaml
   - limitrange.yaml
+  - networkpolicy-deny-all.yaml
+  - networkpolicy-ingress.yaml
+  - networkpolicy-egress.yaml
 namespace: app-prod
 
 patches:
