@@ -1,0 +1,4 @@
+resources:
+  - app/configmap.yaml
+  - app/deployment.yaml
+  - app/service.yaml

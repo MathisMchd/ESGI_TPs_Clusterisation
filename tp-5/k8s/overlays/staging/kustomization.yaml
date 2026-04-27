@@ -1,0 +1,16 @@
+resources:
+  - ../../base
+
+namespace: app-staging
+
+patches:
+  - target:
+      kind: ConfigMap
+      name: demo-app-config
+    patch: |-
+      - op: replace
+        path: /data/ENV_NAME
+        value: staging
+      - op: replace
+        path: /data/LOG_LEVEL
+        value: info

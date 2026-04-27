@@ -1,0 +1,36 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: prod-deployer-role
+  namespace: app-prod
+rules:
+  # lecture des workloads
+  - apiGroups: [""]
+    resources:
+      - pods
+    verbs: [get, list, watch]
+
+  # logs (debug minimal prod)
+  - apiGroups: [""]
+    resources:
+      - pods/log
+    verbs:
+      - [get, list, watch]
+
+  # gestion des déploiements (rolling update CI/CD)
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+    verbs: [get, update, patch]
+
+  # services si nécessaire pour rollout
+  - apiGroups: [""]
+    resources:
+      - services
+    verbs: [get, update, patch]
+
+  # ingress si utilisé
+  - apiGroups: ["networking.k8s.io"]
+    resources:
+      - ingresses
+    verbs: [get, update, patch]
