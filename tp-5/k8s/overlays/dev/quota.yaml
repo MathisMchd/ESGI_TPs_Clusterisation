@@ -1,11 +1,8 @@
 apiVersion: v1
-kind: Namespace
+kind: ResourceQuota
 metadata:
-  name: app-dev
-  labels:
-    app.kubernetes.io/part-of: demo-app
-    environment: dev
-    owner: platform-team
+  name: dev-quota
+  namespace: app-dev
 spec:
   hard:
     pods: "5"

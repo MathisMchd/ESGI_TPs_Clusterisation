@@ -1,6 +1,7 @@
 resources:
   - ../../base
-
+  - quota.yaml
+  - limitrange.yaml
 namespace: app-dev
 
 patches:

@@ -1,6 +1,8 @@
 resources:
   - ../../base
-
+  - quota.yaml
+  - limitrange.yaml
+  
 namespace: app-staging
 
 patches:

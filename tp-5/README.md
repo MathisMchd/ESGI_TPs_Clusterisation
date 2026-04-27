@@ -82,4 +82,34 @@ Tester l'app lancé
 Les `overlays\***\kustomization.yaml` appliquent les patchs à la config de base sous `base\app\configmap.yaml`.
 
 
+# Étape 7 — Garde-fous ressources (ResourceQuota + LimitRange)
 
+Tester la config, que les ressources sont bien appliquées à chaque environnements.
+```bash
+
+kubectl get resourcequota -n app-dev
+kubectl describe resourcequota dev-quota -n app-dev
+
+kubectl get limitrange -n app-dev
+kubectl describe limitrange dev-limits -n app-dev
+```
+
+# Étape 8 — Sécurité des pods (Pod Security Standards = PSS)
+
+Appliquer les namespaces 
+
+```bash
+kubectl label namespace app-dev \
+  pod-security.kubernetes.io/enforce=baseline \
+  pod-security.kubernetes.io/audit=baseline \
+  pod-security.kubernetes.io/warn=baseline
+```
+
+Crash volontaire avec les restrictions 
+```bash
+kubectl get pods -n app-prod
+NAME                        READY   STATUS             RESTARTS     AGE
+demo-app-574656884c-549gl   1/1     Running            0            62m
+demo-app-574656884c-whvwq   1/1     Running            0            62m
+demo-app-796d7fc7d6-m6lgw   0/1     CrashLoopBackOff   1 (9s ago)   12s
+```
