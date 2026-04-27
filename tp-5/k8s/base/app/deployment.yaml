@@ -17,12 +17,22 @@ spec:
       containers:
         - name: demo-app
           image: nginx
+
           ports:
             - containerPort: 80
 
           envFrom:
             - configMapRef:
                 name: demo-app-config
+
+          volumeMounts:
+            - name: html
+              mountPath: /usr/share/nginx/html/index.html
+              subPath: index.html
+
+          command: ["/bin/sh", "-c"]
+          args:
+            - envsubst '$ENV_NAME' < /usr/share/nginx/html/index.html > /usr/share/nginx/html/index.html.tmp && mv /usr/share/nginx/html/index.html.tmp /usr/share/nginx/html/index.html && nginx -g 'daemon off;'
 
           readinessProbe:
             httpGet:
@@ -37,3 +47,11 @@ spec:
               port: 80
             initialDelaySeconds: 10
             periodSeconds: 10
+
+      volumes:
+        - name: html
+          configMap:
+            name: demo-app-config
+            items:
+              - key: index.html
+                path: index.html
